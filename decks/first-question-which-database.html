@@ -1,0 +1,282 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="../../css/reveal.css">
+    <link rel="stylesheet" href="../../css/theme/solarized.css">
+    <link rel="stylesheet" href="../../lib/css/zenburn.css">
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+      <section><h1>First Question! Which database?</h1></section>
+      <section>
+        <p>It's the most important question right?</p>
+        <p>It's decided by the architects!</p>
+      </section>
+      <section>
+        <section>
+          <h1>Hypathetical</h1>
+          <p>Imagine you developing an application that uses sqlite. You also use ORMLite so you don't have to write all that sql yourself. It works out great!</p>
+          <p>....Ok, don't imagine it. That sounds like the Android client.</p>
+        </section>
+        <section>
+          <h1>Fast Forward 2 years.....</h1>
+        </section>
+        <section>
+          <h4>ORMLite (or maybe all ORMs) Sucks</h4>
+          <ul>
+            <li>Saves all columns even if unmodified (Caused bugs in the past)</li>
+            <li>Uses reflection (slow)</li>
+            <li>Eagarly loads relations (SLOW!!!)</li>
+            <li>No RxJava support</li>
+            <li>It's EVERYWHERE!</li>
+          </ul>
+          <!-- <p>This ORMLite library sucks. We have bugs because two threads attempt to save completely different fields on the same object and write over each other! Why is this a thing!</p> -->
+        </section>
+      </section>
+      <section>
+        <section>
+          <h1>Welp...</h1>
+          <p>We chose ORMLite so we are stuck with it.....</p>
+        </section>
+        <section>
+          <h1>Not quite</h1>
+          <p>We are stuck with what we have. But we could have saved ourselves a lot of problems with a simple idea.</p>
+        </section>
+      </section>
+      <section>
+        <h2>Provide abstractions</h2>
+        <p>The problem with how we use ORMLite comes down to leaking it into logic and even the presentation layer.</p>
+        <p>So what if we were to abstract how we get data like good little software engineers.</p>
+      </section>
+      <section>
+        <section>
+          <h3>The Mighty Repository</h3>
+          <pre><code data-trim>
+class ContactRepository {
+  fun queryForContactEq(val jid: String)
+      : Observable&lt;ContactEntity&gt; {
+    return Observable.defer {
+      val contact = databaseHelper.getDao(Contact::class)
+          .where()
+          .eq(Contact.JID, jid)
+          .queryForFirst()
+      Observable.just(ContactEntity(contact))
+    }
+  }
+}
+          </code></pre>
+        </section>
+        <section>
+          <h2>Repositories</h2>
+          <p>Dedicated place for all query logic!</p>
+          <p>This means that we get</p>
+          <ul>
+            <li>Dedicated place for all query logic</li>
+            <li>Only class that need to change when migrating sql or changing sql provider</li>
+            <li>We can mock the database!</li>
+            <li>Only Repository tests need the database!</li>
+            <li>We can test queries by themselves!</li>
+            <li>Tests will run faster!</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Did this just become a talk about unit testing...</h2>
+          <h1>IDK isn't everything?</h1>
+        </section>
+        <section>
+          <video data-autoplay src="first-question-which-database/goal.mp4"></video>
+        </section>
+      </section>
+      <section>
+        <
+      <section><img src="abstraction-and-reusability-of-views/layout.png"/></section>
+      <section>
+        <h1>Model</h1>
+        <pre><code data-trim>
+[
+  {
+    "title": "Ghost in the Shell",
+    "release-date": "4/7/2017",
+    "duration": "122 min",
+    "categories": ["crime", "action"],
+    "price": 10.0,
+    "poster": "http://img.com/1234"
+  }
+]
+        </code></pre>
+      </section>
+      <section>
+        <h1>Model</h1>
+        <pre><code data-trim>
+data class Movie(val title: String,
+                 val released: Date,
+                 val duration: Interval,
+                 val categories: List&lt;String&gt;,
+                 val price: Float,
+                 val poster: Uri))
+        </code></pre>
+      </section>
+      <section>
+        <h3>Binding</h3>
+        <section>
+          <pre><code data-trim>
+picasso.load(model.poster)
+       .into(posterImageView);
+          </code></pre>
+        </section>
+        <section>
+          <pre><code data-trim>
+titleTextView.setText(model.title);
+          </code></pre>
+        </section>
+        <section>
+          <pre><code data-trim>
+String releaseString = dateFormatter.format(model.released);
+String value = resources.getString(R.string.release, releaseString);
+releaseTextView.setText(value);
+          </code></pre>
+        </section>
+        <section>
+          <pre><code data-trim>
+int duration = (int)(Math.round(model.duration / 60.0) * 60)
+durationTextView.setText(String.valueOf(duration) + " hours");
+          </code></pre>
+        </section>
+        <section>
+          <pre><code data-trim>
+priceTextView.setText(String.valueOf(model.price) + "$");
+          </code></pre>
+        </section>
+      </section>
+      <section>
+        <h1>New Requirement</h1>
+        <div>As a user, I want to know the title in other languages.</div>
+      </section>
+      <section>
+        <h3>New Model</h3>
+        <pre><code data-trim>
+[
+  {
+    "titles": [
+      {
+        "title": "Ghost in the Shell",
+        "lang": "en"
+      },
+      {
+        "title": "O Fantasma do Futuro",
+        "lang": "br"
+      }
+    ],
+    ...
+  }
+]
+        </code></pre>
+      </section>
+      <section>
+        <pre><code data-trim>
+String title = "";
+if (model.titles.size == 1) {
+  title = model.titles.get(0);
+} else if (model.titles.size &gt; 1) {
+  title = findTitle(model.titles, lang)
+}
+titleTextView.setText(title);
+        </code></pre>
+      </section>
+      <section>
+        <h1>New Requirement</h1>
+        <div>As a user, I want a list of movies and their categories.</div>
+      </section>
+      <section>
+        <img src="abstraction-and-reusability-of-views/layout-alternate.png"/>
+      </section>
+      <section>
+        <h1>What is really happening?</h1>
+        <div>The View knows to much!</div>
+      </section>
+      <section>
+        <section>
+          <pre><code data-trim>
+data class ViewModel(val title: String,
+                     val released: String,
+                     val info: String,
+                     val bubble: String,
+                     val poster: Uri)
+          </code></pre>
+        </section>
+        <section>
+          <pre><code data-trim>
+data class ViewModel(val title: String,
+                     val released: String,
+                     val info: String,
+                     val bubble: String,
+                     val poster: Uri)
+          </code></pre>
+        </section>
+        <section>
+          <pre><code data-trim data-noescape>
+data class ViewModel(val title: String,
+                     val released: String,
+                     val info: String,
+                     val bubbles: List&lt;String&gt;,
+                     val poster: Uri)
+          </code></pre>
+        </section>
+      </section>
+      <section>
+        <h1>Abstractions</h1>
+        <section>
+          <img src="abstraction-and-reusability-of-views/3tier.png"/>
+        </section>
+        <section>
+          We all know the 3 tier architecture right?
+        </section>
+        <section>
+          <h3>What 3 tier architecture is not</h3>
+          <ul>
+            <li>A project's folder layout</li>
+            <li>A project's folder layout</li>
+            <li>A project's folder layout</li>
+            <li>A project's folder layout</li>
+          </ul>
+        </section>
+        <section>
+          <h3>What 3 tier architecture is</h3>
+          <ul>
+            <li>Clearly definied layers</li>
+            <li>Abstraction for higher layers</li>
+            <li>Isolated from changes to lower layers</li>
+          </ul>
+        </section>
+      </section>
+      <section>
+        <section>
+          <h1>Cons</h1>
+          <ul>
+            <li>Extra class (ViewModel)</li>
+            <li>Map from Logic to UI</li>
+          </ul>
+        </section>
+        <section>
+          <h1>Benefits</h1>
+          <ul>
+            <li>Your code your way</li>
+            <li>Easier to unit test</li>
+            <li>Greater flexibility</li>
+            <li>Changes driven by layout changes</li>
+          </ul>
+        </section>
+      </section>
+      </div>
+    </div>
+    <script src="../../lib/js/head.min.js"></script>
+    <script src="../../js/reveal.js"></script>
+    <script>
+      Reveal.initialize({
+        dependencies: [
+         { src: '../../plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+                          ]
+      });
+    </script>
+  </body>
+</html>
