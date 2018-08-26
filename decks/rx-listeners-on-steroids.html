@@ -1,0 +1,462 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="../css/reveal.css">
+        <link rel="stylesheet" href="../css/theme/solarized.css">
+        <link rel="stylesheet" href="../lib/css/zenburn.css">
+    </head>
+    <body>
+        <div class="reveal">
+            <div class="slides">
+            <section><h1>Rx: Listeners on Steroids</h1></section>
+            <section>
+                <h2>Where are we coming from?</h2>
+                <section>
+                    <pre><code data-trim>
+                        fun onLoad(items: List&lt;ItemViewModel&gt;) {
+                            adapter.update(items)
+                        }
+
+                        fun onTextChanged(text: String) {
+                            send.enabled = text.isNotEmpty()
+                        }
+
+                        fun onXmppChanged(connected: bool) {
+                            send.enabled = connected
+                        }
+                    </code></pre>
+                    <aside class="notes">
+                        Multiple listeners
+                        Multiple flows
+                        Numerous bugs
+                        Hard to reason
+
+                        Is there a bug?
+                        Yes send shouldn't be enabled when there is no text
+                    </aside>
+                </section>
+                <section>
+                    <pre><code data-trim>
+                        private xmppConnected = true;
+
+                        fun onTextChanged(text: String) {
+                            evaluateSendEnabled()
+                        }
+
+                        fun onXmppChanged(connected: bool) {
+                            xmppConnected = connected
+                            evaluateSendEnabled()
+                        }
+
+                        fun evaluateSendEnabled() {
+                            send.enabled = send.text.isNotEmpty() &amp;&amp; xmppConnected
+                        }
+                    </code></pre>
+                    <aside class="notes">
+                        Managing state
+                        Boilerplate
+                        Easy to break
+                        Hard to refactor
+                    </aside>
+                </section>
+            </section>
+            <section>
+                <h2>Where are we going?</h2>
+                <pre><code data-trim>
+                    service.query()
+                        .map { rows -&gt; toViewModel(rows) }
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe { viewmodel -&gt; bind(viewmodel) }
+                </code></pre>
+                <aside class="notes">
+                    Unidirectoional
+                    Easy thread managment
+                    Minimal work on Main Thread
+                </aside>
+            </section>
+            <section>
+                <h2>What is Rx?</h2>
+                <p>ReactiveX is a library for composing asynchronous and event-based programs by using observable sequences.</p>
+                <aside class="notes">That explains everything right. Done. Shut down the presentation.</aside>
+            </section>
+            <section>
+                <h2>What are we trying to fix?</h2>
+                <ul>
+                    <li>Concurrency pitfalls</li>
+                    <ul>
+                        <li>deadlocks</li>
+                        <li>race conditions</li>
+                    </ul>
+                    <li>Thread abstraction</li>
+                    <li>Update soup</li>
+                    <li>Callback hell</li>
+                </ul>
+            </section>
+            <section>
+                <img src="rx-listeners-on-steroids/callbackhell.png" />
+            </section>
+            <section>
+                <h2>Reactive</h2>
+                <section>
+                    <table>
+                        <tr>
+                            <th></th>
+                            <th>Single</th>
+                            <th>Multiple</th>
+                        </tr>
+                        <tr>
+                            <th>Synchronous</th>
+                            <td>T</th>
+                            <th>List&lt;T&gt;</th>
+                        </tr>
+                        <tr>
+                            <th>Asynchronous</th>
+                            <th>Future&lt;T&gt;</th>
+                            <th>Observable&lt;T&gt;</th>
+                        </tr>
+                    </table>
+                    <aside class="notes">
+                        Before we had the Observable pattern and Listeners
+                        Observable mirrors Iterable
+                    </aside>
+                </section>
+                <section>
+                    <h3>Push not Pull</h3>
+                    <ul>
+                        <li>debounce</li>
+                        <li>throttle</li>
+                        <li>buffer</li>
+                    </ul>
+                </section>
+            </section>
+            <section>
+                <h2>Functional</h2>
+                <section>
+                    <ul>
+                        <li>map</li>
+                        <li>flatMap</li>
+                        <li>reduce</li>
+                        <li>fold</li>
+                        <li>groupBy</li>
+                        <li>etc</li>
+                    </ul>
+                </section>
+                <section>
+                    <h2>Composition</h2>
+                    <pre><code data-trim>
+                        Observables.zip(service.query(),
+                                        xmpp.query(),
+                                        xmppConnection.connected()) { queryResult,
+                                                                      xmppResult,
+                                                                      xmppConnected -&gt;
+                                            buildViewModel(queryResult,
+                                                           xmppResult,
+                                                           xmppConnected)
+                                        }
+                    </code></pre>
+                </section>
+            </section>
+            <section>
+                <section>
+                    <h2>Example: Combining Two Async Events</h2>
+                    <pre><code data-trim>
+                        var queryResult = null;
+                        var xmppResult = null;
+                        onResult = () -&gt; {
+                            if (queryResult != null &amp;&amp; xmppResult != null) {
+                                // real code
+                            }
+                        }
+                        service.query { result -&gt;
+                            queryResult = result
+                            onResult()
+                        }
+                        xmpp.query { result -&gt;
+                            xmppResult = result
+                            onResult()
+                        }
+                    </code></pre>
+                </section>
+                <section>
+                    <h2>With Rx?</h2>
+                    <pre><code data-trim>
+                        Observables.zip(service.query(),
+                                        xmpp.query()) { queryResult, xmppResult -&gt;
+                            // real code
+                        }
+                    </code></pre>
+                    <aside class="notes">And your done.</aside>
+                </section>
+            </section>
+            <section>
+                <h2>Which Thread?</h2>
+                <section>
+                    <pre><code data-trim>
+                        service.query()
+                            .map { rows -&gt; toViewModel(rows) }
+                            .subscribe { viewmodel -&gt; bind(viewmodel) }
+                    </code></pre>
+                </section>
+                <section>
+                    <ul>
+                        <li>A thread pool</li>
+                        <li>Unique thread</li>
+                        <li>Main thread</li>
+                        <li>Event loop</li>
+                        <li>Synchronous</li>
+                    </ul>
+                </section>
+                <section>
+                    <h2>All of the above*</h2>
+                </section>
+                <section>
+                    <pre><code data-trim>
+                        service.query()
+                            .map { rows -&gt; toViewModel(rows) }
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe { viewmodel -&gt; bind(viewmodel) }
+                    </code></pre>
+                </section>
+            </section>
+            <section>
+                <section>
+                    <img src="rx-listeners-on-steroids/why-you-no.jpg"/>
+                    <aside class="notes">
+                        Well. Technicalities.
+                    </aside>
+                </section>
+                <section>
+                    <h2>FRP</h2>
+                    <br/>
+                    <p>vs</p>
+                    <br/>
+                    <h2>Event Driven FRP</h2>
+                    <aside class="notes">
+                        FRP was originally coined for dealing with values that depended on time.
+                        Rx works on discrete events.
+                    </aside>
+                </section>
+            </section>
+            <section>
+                    <h2>Marble Diagrams</h2>
+                    <section>
+                        <img src="rx-listeners-on-steroids/map.png" style="background: white"/>
+                    </section>
+                    <section>
+                        <img src="rx-listeners-on-steroids/flatMap.png" style="background: white" />
+                    </section>
+                    <section>
+                        <img src="rx-listeners-on-steroids/catch.png" style="background: white" />
+                    </section>
+            </section>
+            <section>
+                <h2>Rx Recipies</h2>
+            </section>
+            <section>
+                <section>
+                    <h2>Chaining</h2>
+                    <pre><code data-trim>
+                        configRepository.defaultUnit()
+                                        .switchMap { unit -&gt;
+                                            xmpp.search(unit)
+                                        }
+                    </code></pre>
+                </section>
+                <section>
+                    <h2>Combine (Sink)</h2>
+                    <pre><code data-trim>
+                        Observable.zip(query.run(),
+                                       xmppConnection.connectionStatus())
+                    </code></pre>
+                </section>
+                <section>
+                    <h2>Search on Typing Pause</h2>
+                    <pre><code data-trim>
+                        RxTextView.textChanges(searchTextView)
+                                  .map { it.toString() }
+                                  .debounce(500, TimeUnit.Milliseconds)
+                    </code></pre>
+                </section>
+                <section>
+                    <h2>Retry with backoff</h2>
+                    <pre><code data-trim>
+                        stream().retryWhen { errors -&gt;
+                            errors.scan(1) { c, e -&gt; c + 1 }
+                                  .flatMap { i -&gt;
+                                      Observable.delay(i * i, TimeUnit.Seconds)
+                                  }
+                        }
+                    </code></pre>
+                </section>
+                <section>
+                    <h2>Retry with backoff and reset</h2>
+                    <pre><code data-trim>
+                        stream().retryWhen { errors -&gt;
+                            errors.map { Error(it) }
+                                  .timeout(600,
+                                           TimeUnit.Seconds,
+                                           Observable.just(Reset()))
+                                  .scan(1) { c, e -&gt; {
+                                      switch (e) {
+                                          case Error: c + 1;
+                                          case Reset: 1;
+                                      }
+                                  }
+                                  .flatMap { i -&gt;
+                                      Observable.delay(min(300, i * i),
+                                                       TimeUnit.Seconds)
+                                  }
+                        }
+                    </code></pre>
+                </section>
+                <section>
+                    <h2>Switch Request</h2>
+                    <pre><code data-trim>
+                        searchChanged().switchMap { term -&gt;
+                            service.request(term)
+                        }
+                    </code></pre>
+                </section>
+                <section>
+                    <h2>Minimum MainThread Work</h2>
+                    <pre><code data-trim>
+                        service.model()
+                               .observeOn(Schedulers.computation())
+                               .map { model -&gt;
+                                  ViewModel(
+                                      model,
+                                      DiffUtils.calculateDiff(equals)
+                                  )
+                               }
+                               .subscribeOn(Schedulers.io())
+                               .observeOn(AndroidSchedulers.mainThread())
+                               .subscribe(viewModel -&gt; {
+                                   adapter.update(viewModel.model, viewModel.diff)
+                                )
+                    </code></pre>
+                </section>
+                <section>
+                    <h2>State Reducer</h2>
+                    <pre><code data-trim>
+                        intents().scan(defaultState()) { state, intent -&gt;
+                            when (intent) {
+                                RequestSearch -&gt; state.copy(
+                                    isSearching = true
+                                )
+                                is SearchResult -&gt; state.copy(
+                                    isSearching = false
+                                    results = intent.results
+                                )
+                            }
+                        }
+                    </code></pre>
+                </section>
+            </section>
+            <section>
+                <h2>Rx Antipatterns</h2>
+            </section>
+            <section>
+                <section>
+                    <h2>Subjects</h2>
+                    <pre><code data-trim>
+                        subject.subscribeOn(Schedulers.io())
+                               .subscribe()
+                    </code></pre>
+                </section>
+                <section>
+                    <h2>Instead create observables</h2>
+                    <pre><code data-trim>
+                        Observable.create { emitter -&gt;
+                            val listener = { emitter.onNext(it) }
+                            registerListener(listener)
+                            emitter.setCancelable { unregisterListener(listener) }
+                        }
+                    </code></pre>
+                </section>
+            </section>
+            <section>
+                <section>
+                    <h2>Mutating data</h2>
+                    <pre><code data-trim>
+                        conversations().doOnNext { it.add(Header() }
+                    </code></pre>
+                </section>
+                <section>
+                    <h2>Instead copy</h2>
+                    <pre><code data-trim>
+                        conversations().map {
+                            it.copy(
+                                items = it.items.plus(header())
+                            )
+                        }
+                    </code></pre>
+                </section>
+            </section>
+            <section>
+                <section>
+                    <h2>Exiting the stream</h2>
+                    <pre><code data-trim>
+                        stream().doOnNext { someField = true }
+                    </code></pre>
+                </section>
+                <section>
+                    <h2>Instead be pure</h2>
+                    <pre><code data-trim>
+                        conversations().map { toViewModel(it) }
+                                       .subscribe { bind(it) }
+                    </code></pre>
+                </section>
+            </section>
+            <section>
+                <section>
+                    <h2>Subscribe in subscribe</h2>
+                    <pre><code data-trim>
+                        configRepository.defaultUnit()
+                                        .subscribe { item -&gt;
+                            xmppConnection.search(item)
+                                          .subscribe { results -&gt;
+                                unitRepository.updateDefaultUnit(results)
+                                              .subscribe();
+                            }
+                        }
+                    </code></pre>
+                </section>
+                <section>
+                    <img src="rx-listeners-on-steroids/yo-dog.jpg"/>
+                </section>
+                <section>
+                    <h2>Use flatMap and friends</h2>
+                    <pre><code data-trim>
+                        configRepository
+                            .defaultUnit()
+                            .switchMap { xmppConnection.search(it) }
+                            .switchMap { unitRepository.updateDefaultUnit(results) }
+                            .subscribe();
+                    </code></pre>
+                </section>
+            </section>
+                <section>
+                    <h2>Where to go from here?</h2>
+                    <ul>
+                        <li><a href="http://reactivex.io/tutorials.html">http://reactivex.io/tutorials.html</a></li>
+                        <li><a href="http://reactivex.io/learnrx/">http://reactivex.io/learnrx/</a></li>
+                        <li><a href="https://www.learnrxjs.io/">https://www.learnrxjs.io/</a></li>
+                    </ul>
+                </section>
+            </div>
+        </div>
+        <script src="../lib/js/head.min.js"></script>
+        <script src="../js/reveal.js"></script>
+        <script>
+                Reveal.initialize({
+                    dependencies: [
+                        { src: '../../plugin/markdown/marked.js' },
+                        { src: '../../plugin/markdown/markdown.js' },
+                        { src: '../../plugin/notes/notes.js' },
+                        { src: '../../plugin/highlight/highlight.js', callback: function () { hljs.initHighlightingOnLoad(); } }
+                    ]
+                });
+        </script>
+    </body>
+</html>
