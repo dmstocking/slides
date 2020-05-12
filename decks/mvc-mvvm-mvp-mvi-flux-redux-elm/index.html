@@ -1,0 +1,358 @@
+
+<html>
+	<head>
+		<link rel="stylesheet" href="../../../css/reveal.css">
+		<link rel="stylesheet" href="../../../css/theme/solarized.css">
+		<link rel="stylesheet" href="../../../lib/css/zenburn.css">
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+            <section><h1>MVC vs MVVM vs MVP vs Passive View vs MVI vs VIPER vs Flux vs Redux vs Elm</h1></section>
+            <section>
+                <h1>Who am I?</h1>
+                <section>
+                    <ul>
+                        <li>8 years profesionally</li>
+                        <li>MS in CS</li>
+                        <li>Interested in CS since I was 13</li>
+                        <li>Insane</li>
+                    </ul>
+                </section>
+                <section>
+                    <ul>
+                        <li>C++/Qt</li>
+                        <li>Java</li>
+                        <li>Kotlin</li>
+                        <li>Typescript</li>
+                    </ul>
+                </section>
+                <section>
+                    <img src="beard.png"/>
+                </section>
+            </section>
+            <section>
+                <img src="warning.gif" />
+                <ul>
+                    <li>Everyone has their own interpretation</li>
+                    <li>Blogging has blended these together</li>
+                </ul>
+            </section>
+            <section>
+                <h1>Goals</h1>
+                <ul>
+                    <li>Testable</li>
+                    <li>Maintainable</li>
+                    <li>Readable</li>
+                </ul>
+            </section>
+            <section>
+                <section>
+                    <h1>MVC</h1>
+                    <ul>
+                        <li>Misinterpreted</li>
+                        <li>Tried and true</li>
+                        <li>Tainted</li>
+                    </ul>
+                </section>
+                <section>
+                    <p class="stretch">
+                        <img src="mvc-0.png"/>
+                    </p>
+                </section>
+                <section>
+                    <p class="stretch">
+                        <img src="mvc-1.png"/>
+                    </p>
+                </section>
+                <section>
+                    <p class="stretch">
+                        <img src="mvc-2.jpg"/>
+                    </p>
+                </section>
+                <section>
+                    <p class="stretch">
+                        <img src="mvc-3.png"/>
+                    </p>
+                </section>
+                <section>
+                    <p class="stretch">
+                        <img src="mvc-4.png"/>
+                    </p>
+                </section>
+                <section>
+                    <h1>MVC Hijacked</h1>
+                    <ul>
+                        <li>Activity/Fragment</li>
+                        <li>UIViewController</li>
+                        <li>NSViewController</li>
+                        <li>QAbstractItemView</li>
+                    </ul>
+                </section>
+                <section>
+                    <p>I do not believe this is what they had in mind when they coined MVC</p>
+                </section>
+                <section>
+                    <h1>MVC Takeaways</h1>
+                    <ul>
+                        <li>Doesn't hide UI library</li>
+                        <li>Not really testable</li>
+                        <li>Could be have better seperation</li>
+                    </ul>
+                </section>
+            </section>
+            <section>
+                <section>
+                    <h1>MVVM</h1>
+                    <ul>
+                        <li>Popular</li>
+                        <li>Two way binding</li>
+                    </ul>
+                </section>
+                <section>
+                    <p class="stretch">
+                        <img src="mvvm-0.png"/>
+                    </p>
+                </section>
+                <section>
+                    <h1>Popular Frameworks</h1>
+                    <ul>
+                        <li>WPF</li>
+                        <li>Angular</li>
+                        <li>Android Data Binding</li>
+                    </ul>
+                </section>
+                <section>
+                    <h1>MVVM Assertions</h1>
+                    <ul>
+                        <li>Complex</li>
+                        <li>Verbose</li>
+                        <li>Slow</li>
+                    </ul>
+                </section>
+            </section>
+            <section>
+                <section>
+                    <h1>MVP</h1>
+                    <ul>
+                        <li>MVC with a new paint job</li>
+                    </ul>
+                </section>
+                <section>
+                    <p class="stretch">
+                        <img src="mvp-0.png"/>
+                    </p>
+                </section>
+                <section>
+                    <p class="stretch">
+                        <img src="mvp-1.png"/>
+                    </p>
+                </section>
+                <section>
+                    <p class="stretch">
+                        <img src="mvp-2.png"/>
+                    </p>
+                </section>
+                <section>
+                    <p class="stretch">
+                        <img src="mvp-3.png"/>
+                    </p>
+                </section>
+                <section>
+                    <h1>MVP Takeaways</h1>
+                    <ul>
+                        <li>Explicitly seperate from Third Party Dependencies</li>
+                        <li>More testable than MVVM and MVC</li>
+                        <li>Otherwise, basically MVC</li>
+                    </ul>
+                </section>
+            </section>
+            <section>
+                <section>
+                    <h1>VIPER</h1>
+                    <ul>
+                        <li>View</li>
+                        <li>Interactor</li>
+                        <li>Presenter</li>
+                        <li>Entity</li>
+                        <li>Router</li>
+                    </ul>
+                </section>
+                <section>
+                    <p class="stretch">
+                        <img src="viper-0.png"/>
+                    </p>
+                </section>
+                <section>
+                    <h1>VIPER Takeaways</h1>
+                    <ul>
+                        <li>MVP with more stuff</li>
+                        <li>Never made an app big enough to warrent</li>
+                        <li>Never made an app small enough to be practical</li>
+                    </ul>
+                </section>
+            </section>
+            <section>
+                <section>
+                    <h1>Passive View</h1>
+                    <ul>
+                        <li>Take MVP and make the view as dumb as possible</li>
+                    </ul>
+                </section>
+                <section>
+                    <p class="stretch">
+                        <img src="passive-view-0.gif"/>
+                    </p>
+                </section>
+                <section>
+                    <h1>Passive View Takeaways</h1>
+                    <ul>
+                        <li>Least amount of code coupled to your UI framework</li>
+                        <li>As testable as your UI framework allows</li>
+                        <li>No/minmum branches in view</li>
+                    </ul>
+                </section>
+            </section>
+            <section>
+                <section>
+                    <h1>Elm (Flux)</h1>
+                    <ul>
+                        <li>Functional</li>
+                        <li>Unidirectional</li>
+                        <li>Declarative</li>
+                        <li>Data Seperation</li>
+                    </ul>
+                </section>
+                <section>
+                    <p class="stretch">
+                        <img src="elm-0.svg"/>
+                    </p>
+                </section>
+                <section>
+                    <p class="stretch">
+                        <img src="elm-1.jpg"/>
+                    </p>
+                </section>
+                <section>
+                    <h1>Model</h1>
+					<pre><code data-trim>
+type alias Model = Int
+
+init : Model
+init =
+  0
+					</code></pre>
+                    <ul>
+                        <li>Plain old Elm object</li>
+                    </ul>
+                </section>
+                <section>
+                    <h1>View</h1>
+					<pre><code data-trim>
+view : Model -> Html Msg
+view model =
+  div []
+    [ button [ onClick Decrement ] [ text "-" ]
+    , div [] [ text (String.fromInt model) ]
+    , button [ onClick Increment ] [ text "+" ]
+    ]
+					</code></pre>
+                    <ul>
+                        <li>The view is just a function</li>
+                        <li>UI elements are just data</li>
+                        <li>Pure function</li>
+                    </ul>
+                </section>
+                <section>
+                    <h1>Update</h1>
+					<pre><code data-trim>
+type Msg
+  = Increment
+  | Decrement
+
+update : Msg -> Model -> Model
+update msg model =
+  case msg of
+    Increment ->
+      model + 1
+
+    Decrement ->
+      model - 1
+					</code></pre>
+                    <ul>
+                        <li>Update is just a reducer</li>
+                        <li>Pure function</li>
+                    </ul>
+                </section>
+                <section>
+                    <p class="stretch">
+                        <img src="mind-blown.gif"/>
+                    </p>
+                </section>
+                <section>
+                    <h1>Elm (Flux) Takeaways</h1>
+                    <ul>
+                        <li>Everything is a function</li>
+                        <li>State is self contained and isolated</li>
+                        <li>You cannot get anouther views data</li>
+                    </ul>
+                </section>
+            </section>
+            <section>
+                <section>
+                    <h1>Redux</h1>
+                    <ul>
+                        <li>Not really an architecture</li>
+                        <li>Central state management</li>
+                        <li>Elm architecture for your whole app</li>
+                        <li>All components have access to entire app state</li>
+                    </ul>
+                </section>
+                <section>
+                    <h1>Redux Takeaways</h1>
+                    <ul>
+                        <li>You don't need complicated ways to pass state around</li>
+                        <li>Business requirements don't care how "clean" your code is</li>
+                    </ul>
+                </section>
+            </section>
+            <section>
+                <section>
+                    <h1>MVI</h1>
+                    <ul>
+                        <li>Elm + Rx</li>
+                    </ul>
+                </section>
+                <section>
+                    <p class="stretch">
+                        <img src="mvi-0.png"/>
+                    </p>
+                </section>
+                <section>
+                    <p class="stretch">
+                        <img src="mvi-1.png"/>
+                    </p>
+                </section>
+                <section>
+                    <h1>MVI Takeaways</h1>
+                    <ul>
+                        <li>Elm + Rx = 💖</li>
+                        <li>Single subscription. Easy cleanup</li>
+                        <li>No callbacks</li>
+                        <li>You can use this (we do in web messaging)</li>
+                    </ul>
+                </section>
+            </section>
+			</div>
+		</div>
+		<script src="../../../lib/js/head.min.js"></script>
+		<script src="../../../js/reveal.js"></script>
+		<script>
+			Reveal.initialize({
+			  dependencies: [
+			   { src: '../../../plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+                          ]
+			});
+		</script>
+	</body>
+</html>
